@@ -1,36 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { registerUser, loginWithGoogle } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { User as FirebaseUser } from "firebase/auth";
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
-  async function handleRegister(e: any) {
+  async function handleRegister(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }
+
     try {
-      await registerUser(email, password);
+      const user: FirebaseUser = await registerUser(email, password);
+      console.log("Registered user:", user);
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError("Unknown error occurred");
     }
   }
 
   async function handleGoogleLogin() {
+    setError("");
     try {
-      await loginWithGoogle();
+      const { user, role }: { user: FirebaseUser; role: string } = await loginWithGoogle();
+      console.log("Google sign up:", user, "Role:", role);
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError("Unknown error occurred");
     }
   }
 

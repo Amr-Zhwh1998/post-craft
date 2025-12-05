@@ -1,42 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { loginUser, loginWithGoogle } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { User as FirebaseUser } from "firebase/auth";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
-async function handleLogin(e: any) {
-  e.preventDefault();
-  setError("");
-  try {
-    const { user, role } = await loginUser(email, password);
-    console.log("User logged in:", user, "Role:", role);
-    if (role === "admin") router.push("/admin");
-    else router.push("/dashboard");
-  } catch (err: any) {
-    setError(err.message);
+  async function handleLogin(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    try {
+      const { user, role }: { user: FirebaseUser; role: string } = await loginUser(email, password);
+      console.log("User logged in:", user, "Role:", role);
+      if (role === "admin") router.push("/admin");
+      else router.push("/dashboard");
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError("Unknown error");
+    }
   }
-}
 
-async function handleGoogle() {
-  setError("");
-  try {
-    const { user, role } = await loginWithGoogle();
-    console.log("Google login:", user, "Role:", role);
-    if (role === "admin") router.push("/admin");
-    else router.push("/dashboard");
-  } catch (err: any) {
-    setError(err.message);
+  async function handleGoogle() {
+    setError("");
+    try {
+      const { user, role }: { user: FirebaseUser; role: string } = await loginWithGoogle();
+      console.log("Google login:", user, "Role:", role);
+      if (role === "admin") router.push("/admin");
+      else router.push("/dashboard");
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError("Unknown error");
+    }
   }
-}
-
-
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -81,7 +81,7 @@ async function handleGoogle() {
         </div>
 
         <p className="mt-6 text-sm text-gray-600 dark:text-gray-300 text-center">
-          Don't have an account? <a href="/register" className="text-blue-600 hover:underline">Register</a>
+          Dont have an account? <a href="/register" className="text-blue-600 hover:underline">Register</a>
         </p>
       </div>
     </div>

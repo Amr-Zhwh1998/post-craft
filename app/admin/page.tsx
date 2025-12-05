@@ -3,12 +3,19 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
+import { User as FirebaseUser } from "firebase/auth";
+
+interface AppUser {
+  id: string;
+  email: string | null;
+  role?: string;
+}
 
 export default function AdminPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [usersList, setUsersList] = useState<any[]>([]);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [usersList, setUsersList] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,9 +26,15 @@ export default function AdminPage() {
         setUser(u);
 
         // קבלת כל המשתמשים אם זה admin
-        const docRef = collection(db, "users");
-        const snapshot = await getDocs(docRef);
-        const usersData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const usersCollection = collection(db, "users");
+        const snapshot = await getDocs(usersCollection);
+        const usersData: AppUser[] = snapshot.docs.map(
+          (doc: QueryDocumentSnapshot<DocumentData>) => ({
+            id: doc.id,
+            email: doc.data().email ?? null,
+            role: doc.data().role,
+          })
+        );
         setUsersList(usersData);
 
         setLoading(false);
@@ -29,10 +42,9 @@ export default function AdminPage() {
     });
 
     return () => unsub();
-  }, []);
+  }, [router]);
 
   if (loading) return <p>Loading...</p>;
-
   if (!user) return null;
 
   return (
@@ -44,7 +56,7 @@ export default function AdminPage() {
       <ul>
         {usersList.map((u) => (
           <li key={u.id}>
-            {u.email} - Role: {u.role || "user"}
+            {u.email} - Role: {u.role ?? "user"}
           </li>
         ))}
       </ul>
