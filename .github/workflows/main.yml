@@ -10,28 +10,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      # שליפת הקוד
-      - uses: actions/checkout@v3
+    env:  # <-- כאן מוסיפים את המשתנים
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
 
-      # התקנת Node.js
+    steps:
+      - uses: actions/checkout@v3
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
-
-      # התקנת תלויות
       - name: Install dependencies
         run: npm install
-
-      # בדיקות TypeScript
       - name: Type check
         run: npx tsc --noEmit
-
-      # בדיקות Lint
       - name: Lint
         run: npm run lint
-
-      # Build Next.js
-      - name: Build
+      - name: Build Next.js
         run: npm run build
