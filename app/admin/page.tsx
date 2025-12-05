@@ -1,4 +1,7 @@
+// app/admin/page.tsx
 "use client";
+
+export const dynamic = "force-dynamic"; // <- חשוב כדי למנוע prerender
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
@@ -25,7 +28,6 @@ export default function AdminPage() {
       } else {
         setUser(u);
 
-        // קבלת כל המשתמשים אם זה admin
         const usersCollection = collection(db, "users");
         const snapshot = await getDocs(usersCollection);
         const usersData: AppUser[] = snapshot.docs.map(
@@ -49,7 +51,7 @@ export default function AdminPage() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>Admin Dashboard</h1>
+      <h1>Hi Admin</h1>
       <p>ברוך הבא, {user.email}</p>
 
       <h2 className="mt-6 text-xl font-bold">Users:</h2>
