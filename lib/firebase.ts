@@ -14,13 +14,19 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 };
 
+// Initialize Firebase only once
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
+// Auth / Firestore / Storage
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// Analytics רץ רק בדפדפן
-export const analytics = typeof window !== "undefined"
-  ? await isSupported().then((yes) => (yes ? getAnalytics(app) : null))
-  : null;
+// Analytics – רק בדפדפן
+let analytics: ReturnType<typeof getAnalytics> | null = null;
+if (typeof window !== "undefined") {
+  isSupported().then((yes) => {
+    if (yes) analytics = getAnalytics(app);
+  });
+}
+export { analytics };
