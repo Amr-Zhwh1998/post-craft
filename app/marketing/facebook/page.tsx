@@ -36,8 +36,8 @@ export default function FacebookMarketing() {
     setLoading(true);
     setPlan(null);
 
-    try {
-      const prompt = `
+  try {
+  const prompt = `
 אתה עוזר שיווקי חכם. צור תוכנית שבועית עבור עסק בשם "${form.businessName}" בתחום "${form.niche}".
 המטרות הן: "${form.goals}".
 רעיונות תוכן ראשוניים: "${form.contentIdeas}".
@@ -53,41 +53,59 @@ export default function FacebookMarketing() {
 ]
 `;
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 1000,
-        }),
-      });
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
+    }),
+  });
 
-      const data = await response.json();
-      const aiText: string = data.choices?.[0]?.message?.content || "[]";
+  const data = await response.json();
+  const aiText: string = data.choices?.[0]?.message?.content || "[]";
 
-      // ניסיון מתקדם לפענח JSON גם אם יש Markdown או טקסט מסביב
-        const jsonMatch = aiText.match(/\[[\s\S]*\]/);
-      let parsedPlan: DailyPost[] = [];
-      if (jsonMatch) {
-        try {
-          parsedPlan = JSON.parse(jsonMatch[0]);
-        } catch {
-          parsedPlan = [{ day: "שגיאה", time: "", content: "לא ניתן לקרוא את הנתונים", groups: [] }];
-        }
-      } else {
-        parsedPlan = [{ day: "שגיאה", time: "", content: "לא התקבלה תוכנית תקינה מה-AI", groups: [] }];
-      }
+  const jsonMatch = aiText.match(/\[[\s\S]*\]/);
+  let parsedPlan: DailyPost[] = [];
 
-      setPlan(parsedPlan);
-    } catch (error: any) {
-      setPlan([{ day: "שגיאה", time: "", content: "אירעה שגיאה ביצירת התוכנית: " + error.message, groups: [] }]);
-    } finally {
-      setLoading(false);
+  if (jsonMatch) {
+    try {
+      parsedPlan = JSON.parse(jsonMatch[0]);
+    } catch {
+      parsedPlan = [
+        { day: "שגיאה", time: "", content: "לא ניתן לקרוא את הנתונים", groups: [] },
+      ];
     }
+  } else {
+    parsedPlan = [
+      {
+        day: "שגיאה",
+        time: "",
+        content: "לא התקבלה תוכנית תקינה מה-AI",
+        groups: [],
+      },
+    ];
+  }
+
+  setPlan(parsedPlan);
+} catch (error: unknown) {
+  const message = error instanceof Error ? error.message : "שגיאה לא ידועה";
+  setPlan([
+    {
+      day: "שגיאה",
+      time: "",
+      content: "אירעה שגיאה ביצירת התוכנית: " + message,
+      groups: [],
+    },
+  ]);
+} finally {
+  setLoading(false);
+}
+
   };
 
   return (
