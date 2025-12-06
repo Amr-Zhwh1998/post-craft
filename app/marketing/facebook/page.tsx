@@ -70,7 +70,7 @@ export default function FacebookMarketing() {
       const aiText: string = data.choices?.[0]?.message?.content || "[]";
 
       // ניסיון מתקדם לפענח JSON גם אם יש Markdown או טקסט מסביב
-      const jsonMatch = aiText.match(/\[.*\]/s);
+        const jsonMatch = aiText.match(/\[[\s\S]*\]/);
       let parsedPlan: DailyPost[] = [];
       if (jsonMatch) {
         try {
